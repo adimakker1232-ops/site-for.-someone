@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Message</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .heart {
+      position: absolute;
+      color: #ff4081;
+      animation: floatUp linear infinite;
+      opacity: 0.8;
+      user-select: none;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(1); opacity: 0.8; }
+      50% { transform: translateY(-150px) scale(1.2); opacity: 1; }
+      100% { transform: translateY(-300px) scale(1); opacity: 0; }
+    }
+
+    .container {
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 30px 20px;
+      border-radius: 20px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+      max-width: 480px;
+      width: 90%;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      position: relative;
+      z-index: 10;
+    }
+
+    h1 {
+      font-size: 22px;
+      margin-bottom: 25px;
+      color: #ff4081;
+      word-wrap: break-word;
+    }
+
+    p {
+      font-size: 16px;
+      margin-top: 20px;
+      color: #555;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 8px;
+      font-size: 15px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.3s;
+      font-weight: 600;
+    }
+
+    button:hover { transform: scale(1.05); opacity: 0.9; }
+
+    .btn-yes { background-color: #ff4081; color: #fff; }
+    .btn-no { background-color: #9e9e9e; color: #fff; }
+    .btn-restart { background-color: #4caf50; color: #fff; }
+    .btn-start { background-color: #ff6f61; color: #fff; font-size: 18px; padding: 12px 25px; }
+
+    @media (max-width: 600px) {
+      .container { padding: 25px 15px; }
+      h1 { font-size: 20px; }
+      p { font-size: 15px; }
+      button { font-size: 14px; padding: 8px 18px; }
+    }
+
+    #musicControl {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: rgba(255,255,255,0.8);
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 20;
+      font-weight: 600;
+      color: #ff4081;
+    }
+
+    #musicControl:hover { background-color: rgba(255,255,255,1); }
+  </style>
+</head>
+<body>
+  <div class="container" id="app">
+    <h1 id="message">Welcome!</h1>
+    <div id="buttons"></div>
+  </div>
+
+  <!-- Music control button -->
+  <button id="musicControl">🔊 Music</button>
+
+  <!-- Background music -->
+  <audio id="bgMusic" loop>
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_938af9c7e7.mp3?filename=romantic-piano-10871.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <script>
+    const app = document.getElementById('app');
+    const messageEl = document.getElementById('message');
+    const buttonsEl = document.getElementById('buttons');
+    const bgMusic = document.getElementById('bgMusic');
+    const musicControl = document.getElementById('musicControl');
+    let musicPlaying = false;
+
+    musicControl.onclick = () => {
+      if (musicPlaying) {
+        bgMusic.pause();
+        musicPlaying = false;
+        musicControl.textContent = "🔇 Music";
+      } else {
+        bgMusic.volume = 0.2;
+        bgMusic.play();
+        musicPlaying = true;
+        musicControl.textContent = "🔊 Music";
+      }
+    };
+
+    function typeMessage(text, callback) {
+      messageEl.textContent = '';
+      buttonsEl.innerHTML = '';
+      let index = 0;
+      const interval = setInterval(() => {
+        messageEl.textContent += text.charAt(index);
+        index++;
+        if (index === text.length) {
+          clearInterval(interval);
+          if (callback) callback();
+        }
+      }, 50);
+    }
+
+    function showButtons(options) {
+      buttonsEl.innerHTML = '';
+      options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.textContent = opt.text;
+        btn.className = opt.class;
+        btn.onclick = opt.action;
+        buttonsEl.appendChild(btn);
+      });
+    }
+
+    function step1(choice) {
+      if(choice === 'yes') {
+        typeMessage("It's something special, should I say that?", () => {
+          showButtons([
+            { text: "Yes", class: "btn-yes", action: () => step2('yes') },
+            { text: "No", class: "btn-no", action: () => step2('no') }
+          ]);
+        });
+      } else {
+        typeMessage("Sorry to interpret you", showRestart);
+      }
+    }
+
+    function step2(choice) {
+      if(choice === 'yes') {
+        typeMessage("I love you Ani❤️‍🩹 But I don't need any answers cuz I know your answer", () => {
+          typeMessage("\nBye bye Ani. Take care of yourself darling, now it's time for me to go", showRestart);
+        });
+      } else {
+        typeMessage("I see, it's OK", showRestart);
+      }
+    }
+
+    function showRestart() {
+      const restartBtn = document.createElement('button');
+      restartBtn.textContent = "Restart";
+      restartBtn.className = "btn-restart";
+      restartBtn.onclick = startStory;
+      buttonsEl.appendChild(restartBtn);
+    }
+
+    function startStory() {
+      typeMessage("I would like to say you something", () => {
+        showButtons([
+          { text: "Say", class: "btn-yes", action: () => step1('yes') },
+          { text: "I don't want to hear", class: "btn-no", action: () => step1('no') }
+        ]);
+      });
+    }
+
+    function createHearts() {
+      setInterval(() => {
+        const heart = document.createElement('div');
+        heart.className = 'heart';
+        heart.style.left = Math.random() * window.innerWidth + 'px';
+        heart.style.fontSize = (12 + Math.random() * 20) + 'px';
+        heart.style.animationDuration = (3 + Math.random() * 2) + 's';
+        heart.textContent = '❤️';
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 5000);
+      }, 400);
+    }
+
+    window.onload = () => {
+      app.style.opacity = 1;
+
+      // Show start button first
+      showButtons([
+        { text: "Start", class: "btn-start", action: startStory }
+      ]);
+
+      createHearts();
+    };
+  </script>
+</body>
+</html>
